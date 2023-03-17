@@ -19,8 +19,6 @@ fn main() {
 }
 
 
-
-
 #[tauri::command]
 fn encrypt_image(payload : &str, image : &str, output : &str, password: &str) {
 
@@ -96,41 +94,3 @@ fn decrypt_text_helper(encrypted_text: &str, key: i32) -> String {
   }
   decrypted
 }
-
-// #[tauri::command]
-// fn encrypt_audio(payload : &str, audio : &str, output : &str) {
-//   let binding = payload.to_string();
-//   let payload = str_to_bytes(&binding);
-
-//   let destination_audio = file_as_dynamic_image(audio.to_string());
-//   let enc = Encoder::new(payload, destination_audio);
-
-//   let result = enc.encode_alpha();
-//   save_image_buffer(result, output.to_string());
-// }
-
-
-// #[tauri::command]
-// fn decrypt_audio(audio : &str) -> String {
-//   let encoded_audio = file_as_image_buffer(audio.to_string());
-//   let dec = Decoder::new(encoded_audio);
-//   let out_buffer = dec.decode_alpha();
-//   let clean_buffer: Vec<u8> = out_buffer.into_iter()
-//                                       .filter(|b| {
-//                                           *b != 0xff_u8
-//                                       })
-//                                       .collect();
-
-//   let message = bytes_to_str(clean_buffer.as_slice());
-//   fs::remove_file(audio.to_string()).unwrap();
-//   message.to_string().into()
-// }
-
-// 1. Inserting encrypted image. 
-// 3. Build
-// 4. 3 Chances to enter password
-
-
-
-// npm run tauri build. But skip ng build. Only build tauri project.
-// npm run tauri build --skip-ng-build
