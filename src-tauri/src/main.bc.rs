@@ -13,18 +13,17 @@ use std::fs;
 
 fn main() {
   tauri::Builder::default()
-    .invoke_handler(tauri::generate_handler![encrypt_image, decrypt_image])
+    .invoke_handler(tauri::generate_handler![encrypt_text, decrypt_text])
     .run(tauri::generate_context!())
     .expect("Error while running Tauri Application");
 }
 
 
-
-
 #[tauri::command]
-fn encrypt_image(payload : &str, image : &str, output : &str, password: &str) {
+fn encrypt_text(payload : &str, image : &str, output : &str, password: &str) {
 
   let final_payload = payload.to_string() + "-" + password;
+  
   let encrypted = encrypt_text_helper(&final_payload, 2);
 
   let binding = encrypted.to_string();
@@ -36,9 +35,8 @@ fn encrypt_image(payload : &str, image : &str, output : &str, password: &str) {
   save_image_buffer(result, output.to_string());
 }
 
-
 #[tauri::command]
-fn decrypt_image(image : &str, password: &str) -> String {
+fn decrypt_text(image : &str, password: &str) -> String {
 
   if !Path::new(image).exists() {
     return "File Doesn't Exist".to_string().into();
@@ -54,12 +52,12 @@ fn decrypt_image(image : &str, password: &str) -> String {
                                       })
                                       .collect();
 
+  
   let message = bytes_to_str(clean_buffer.as_slice());
   let decrypted = decrypt_text_helper(&message, 2);
-
+  
   let extracted_password = decrypted.split("-").last().unwrap();
   let message = decrypted.split("-").next().unwrap();
-  
 
   if extracted_password == password {
     fs::remove_file(image.to_string()).unwrap();
@@ -88,40 +86,8 @@ fn decrypt_text_helper(encrypted_text: &str, key: i32) -> String {
   decrypted
 }
 
-// #[tauri::command]
-// fn encrypt_audio(payload : &str, audio : &str, output : &str) {
-//   let binding = payload.to_string();
-//   let payload = str_to_bytes(&binding);
-
-//   let destination_audio = file_as_dynamic_image(audio.to_string());
-//   let enc = Encoder::new(payload, destination_audio);
-
-//   let result = enc.encode_alpha();
-//   save_image_buffer(result, output.to_string());
-// }
 
 
-// #[tauri::command]
-// fn decrypt_audio(audio : &str) -> String {
-//   let encoded_audio = file_as_image_buffer(audio.to_string());
-//   let dec = Decoder::new(encoded_audio);
-//   let out_buffer = dec.decode_alpha();
-//   let clean_buffer: Vec<u8> = out_buffer.into_iter()
-//                                       .filter(|b| {
-//                                           *b != 0xff_u8
-//                                       })
-//                                       .collect();
 
-//   let message = bytes_to_str(clean_buffer.as_slice());
-//   fs::remove_file(audio.to_string()).unwrap();
-//   message.to_string().into()
-// }
-
-// 1. Inserting encrypted image. 
-// 3. Build
 // 4. 3 Chances to enter password
-
-
-
-// npm run tauri build. But skip ng build. Only build tauri project.
-// npm run tauri build --skip-ng-build
+// 5. Audio Payload & Text Payload | Enter or Upload
