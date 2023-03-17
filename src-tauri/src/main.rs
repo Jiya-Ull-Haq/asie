@@ -6,10 +6,10 @@ use steganography::util::{file_as_image_buffer, save_image_buffer, bytes_to_str}
 use steganography::util::{file_as_dynamic_image, str_to_bytes};
 use std::fs;
 
-#[cfg_attr(
-  all(not(debug_assertions), target_os = "windows"),
-  windows_subsystem = "windows"
-)]
+// #[cfg_attr(
+//   all(not(debug_assertions), target_os = "windows"),
+//   windows_subsystem = "windows"
+// )]
 
 fn main() {
   tauri::Builder::default()
@@ -38,11 +38,12 @@ fn encrypt_image(payload : &str, image : &str, output : &str, password: &str) {
 
 
 #[tauri::command]
-fn decrypt_image(image : &str, password: &str) -> String {
+fn decrypt_image(image : &str, password: &str, dlt: bool) -> String {
 
   if !Path::new(image).exists() {
     return "File Doesn't Exist".to_string().into();
   }
+
   let encoded_image = file_as_image_buffer(image.to_string());
 
 
@@ -66,8 +67,16 @@ fn decrypt_image(image : &str, password: &str) -> String {
     return message.to_string().into()
   }
   else{
-    return "Wrong Password".to_string().into();
+
+    if dlt{
+      fs::remove_file(image.to_string()).unwrap();
+      return "Wrong Password".to_string().into();
+    } else {
+      return "Wrong Password".to_string().into();
+    }
+    
   }
+
 }
 
 fn encrypt_text_helper(text: &str, key: i32) -> String {

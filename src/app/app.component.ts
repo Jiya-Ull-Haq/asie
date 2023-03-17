@@ -105,22 +105,42 @@ export class AppComponent {
     this.encodeForm.reset();
   }
 
+  boom = false;
+  chances = 2;
+
   async decryptImage(){
     console.log(this.pathX);
     await invoke('decrypt_image', {
       image: this.pathX,
-      password : this.decodeForm.value.password
+      password : this.decodeForm.value.password,
+      dlt : this.boom
     }).then((message) => {
-      this.output = message as string; 
-    })
-    if (this.output == 'Wrong Password'){
-      this.showError('Error', this.output);
-    }
-    if (this.output == "File Doesn't Exist"){
-      this.showWarning('Warning ⚠︎', this.output);
-    }
+      
 
-    
+      if (message as string == 'Wrong Password'){
+        if (this.chances == 0){
+          this.chances = 2;
+          this.output = "Wrong Password | No More Tries Left"
+          return
+        }
+        if (this.chances == 1){
+          this.chances -= 1;
+          this.boom = true;
+          this.output = "Wrong Password | " + (this.chances as number + 1) + " Chance Left "
+        } else {
+          this.chances -= 1;
+          this.showError('Error', this.output);
+          this.output = "Wrong Password | " + (this.chances as number + 1) + " Chances Left "
+        }
+      }
+
+      if (message as string == "File Doesn't Exist"){
+        this.showWarning('Warning ⚠︎', message as string);
+        this.output = "File Doesn't Exist";
+      }
+      
+    })
+
   }
 
   saveImageToDB(filename: string, arrayBuffer: ArrayBuffer) {
