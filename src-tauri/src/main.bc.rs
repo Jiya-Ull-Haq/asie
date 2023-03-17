@@ -6,23 +6,24 @@ use steganography::util::{file_as_image_buffer, save_image_buffer, bytes_to_str}
 use steganography::util::{file_as_dynamic_image, str_to_bytes};
 use std::fs;
 
-// #[cfg_attr(
-//   all(not(debug_assertions), target_os = "windows"),
-//   windows_subsystem = "windows"
-// )]
+#[cfg_attr(
+  all(not(debug_assertions), target_os = "windows"),
+  windows_subsystem = "windows"
+)]
 
 fn main() {
   tauri::Builder::default()
-    .invoke_handler(tauri::generate_handler![encrypt_image, decrypt_image])
+    .invoke_handler(tauri::generate_handler![encrypt_text, decrypt_text])
     .run(tauri::generate_context!())
     .expect("Error while running Tauri Application");
 }
 
 
 #[tauri::command]
-fn encrypt_image(payload : &str, image : &str, output : &str, password: &str) {
+fn encrypt_text(payload : &str, image : &str, output : &str, password: &str) {
 
   let final_payload = payload.to_string() + "-" + password;
+  
   let encrypted = encrypt_text_helper(&final_payload, 2);
 
   let binding = encrypted.to_string();
@@ -34,14 +35,12 @@ fn encrypt_image(payload : &str, image : &str, output : &str, password: &str) {
   save_image_buffer(result, output.to_string());
 }
 
-
 #[tauri::command]
-fn decrypt_image(image : &str, password: &str, dlt: bool) -> String {
+fn decrypt_text(image : &str, password: &str) -> String {
 
   if !Path::new(image).exists() {
     return "File Doesn't Exist".to_string().into();
   }
-
   let encoded_image = file_as_image_buffer(image.to_string());
 
 
@@ -53,28 +52,20 @@ fn decrypt_image(image : &str, password: &str, dlt: bool) -> String {
                                       })
                                       .collect();
 
+  
   let message = bytes_to_str(clean_buffer.as_slice());
   let decrypted = decrypt_text_helper(&message, 2);
-
+  
   let extracted_password = decrypted.split("-").last().unwrap();
   let message = decrypted.split("-").next().unwrap();
-  
 
   if extracted_password == password {
     fs::remove_file(image.to_string()).unwrap();
     return message.to_string().into()
   }
   else{
-
-    if dlt{
-      fs::remove_file(image.to_string()).unwrap();
-      return "Wrong Password".to_string().into();
-    } else {
-      return "Wrong Password".to_string().into();
-    }
-    
+    return "Wrong Password".to_string().into();
   }
-
 }
 
 fn encrypt_text_helper(text: &str, key: i32) -> String {
@@ -94,3 +85,9 @@ fn decrypt_text_helper(encrypted_text: &str, key: i32) -> String {
   }
   decrypted
 }
+
+
+
+
+// 4. 3 Chances to enter password
+// 5. Audio Payload & Text Payload | Enter or Upload
